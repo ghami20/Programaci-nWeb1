@@ -1,1 +1,108 @@
-Hola mi nombre es tal, mi proyecto trata de 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agencia de Viajes</title>
+    <style>
+        canvas { display: block; }
+        body { margin: 0; overflow: hidden; }
+        #country-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="globe-container"></div>
+<div id="country-info">
+    <h3 id="country-name">Seleccione un país</h3>
+    <p id="flight-cost"></p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://d3js.org/d3.v6.min.js"></script>
+<script>
+// Datos de ejemplo para los países
+const countriesData = {
+    "USA": "United States of America",
+    "CAN": "Canada",
+    "MEX": "Mexico",
+    // ... otros países
+};
+
+// Función para obtener un costo de vuelo aleatorio
+function getRandomFlightCost() {
+    return Math.floor(Math.random() * (1000 - 100 + 1)) + 100;
+}
+
+// Inicializar el globo terráqueo (simplificado)
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.getElementById('globe-container').appendChild(renderer.domElement);
+
+const globeGeometry = new THREE.SphereGeometry(5, 32, 32);
+const globeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+const globe = new THREE.Mesh(globeGeometry, globeMaterial);
+scene.add(globe);
+
+camera.position.z = 10;
+
+// Configuración del raycaster
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function onMouseClick(event) {
+    // Calcula la posición del ratón en coordenadas normalizadas (-1 a +1)
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    // Configura el raycaster
+    raycaster.setFromCamera(mouse, camera);
+
+    // Detecta intersecciones
+    const intersects = raycaster.intersectObject(globe);
+
+    if (intersects.length > 0) {
+        const intersection = intersects[0];
+        const point = intersection.point;
+
+        // Aquí puedes agregar la lógica para determinar el país basado en el punto de intersección
+        // Esto requiere datos de polígonos de países y lógica para mapear el punto a un país
+
+        // Ejemplo de lógica simplificada:
+        const countryId = "CAN"; // Aquí deberías usar la lógica real para determinar el país
+
+        if (countriesData[countryId]) {
+            const countryName = countriesData[countryId];
+            const flightCost = getRandomFlightCost();
+
+            document.getElementById('country-name').innerText = countryName;
+            document.getElementById('flight-cost').innerText = `Costo estimado del vuelo: $${flightCost}`;
+        } else {
+            document.getElementById('country-name').innerText = "País no encontrado";
+            document.getElementById('flight-cost').innerText = "";
+        }
+    }
+}
+
+window.addEventListener('click', onMouseClick, false);
+
+// Función de animación
+function animate() {
+    requestAnimationFrame(animate);
+    globe.rotation.y += 0.01;
+    renderer.render(scene, camera);
+}
+animate();
+</script>
+
+</body>
+</html>
